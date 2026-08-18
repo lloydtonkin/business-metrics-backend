@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        body.sunset-theme {
+            background: linear-gradient(135deg, #f5f1e8 0%, #e8e0d0 100%);
+        }
+
+        body.hps-theme {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+
+        body.hps-theme {
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+        }
+
+        body.sunset-theme .header h1 {
+            color: #2d5a4a;
+        }
+
+        body.sunset-theme .header p {
+            color: #5a7a6f;
+        }
+
+        body.hps-theme .header h1 {
+            color: #ffffff;
+        }
+
+        body.hps-theme .header p {
+            color: #cccccc;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid;
+        }
+
+        body.sunset-theme .tabs {
+            border-bottom-color: #d4c4b4;
+        }
+
+        body.hps-theme .tabs {
+            border-bottom-color: #8b1a1a;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        body.sunset-theme .tab-btn {
+            color: #8a9e94;
+        }
+
+        body.hps-theme .tab-btn {
+            color: #999999;
+        }
+
+        body.sunset-theme .tab-btn.active {
+            color: #2d5a4a;
+            border-bottom-color: #2d5a4a;
+        }
+
+        body.hps-theme .tab-btn.active {
+            color: #ffffff;
+            border-bottom-color: #d32f2f;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid;
+        }
+
+        body.sunset-theme .metric-card {
+            border-top-color: #2d5a4a;
+        }
+
+        body.hps-theme .metric-card {
+            background: #2d2d2d;
+            color: #ffffff;
+            border-top-color: #d32f2f;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        body.hps-theme .metric-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        body.sunset-theme .metric-label {
+            color: #8a9e94;
+        }
+
+        body.hps-theme .metric-label {
+            color: #999999;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        body.sunset-theme .metric-value {
+            color: #2d5a4a;
+        }
+
+        body.hps-theme .metric-value {
+            color: #ffffff;
+        }
+
+        .metric-trend {
+            font-size: 12px;
+        }
+
+        body.sunset-theme .metric-trend {
+            color: #8a9e94;
+        }
+
+        body.hps-theme .metric-trend {
+            color: #cccccc;
+        }
+
+        .metric-trend.positive {
+            color: #27ae60;
+        }
+
+        .metric-trend.negative {
+            color: #e74c3c;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        body.hps-theme .input-section {
+            background: #2d2d2d;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .input-section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        body.sunset-theme .input-section h2 {
+            color: #2d5a4a;
+        }
+
+        body.hps-theme .input-section h2 {
+            color: #ffffff;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        body.sunset-theme .form-group label {
+            color: #2d5a4a;
+        }
+
+        body.hps-theme .form-group label {
+            color: #ffffff;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+            color: #333;
+        }
+
+        body.hps-theme .form-group input {
+            background: #3d3d3d;
+            color: #ffffff;
+            border-color: #555555;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+        }
+
+        body.sunset-theme .form-group input:focus {
+            border-color: #2d5a4a;
+            box-shadow: 0 0 0 3px rgba(45, 90, 74, 0.1);
+        }
+
+        body.hps-theme .form-group input:focus {
+            border-color: #d32f2f;
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            color: white;
+        }
+
+        body.sunset-theme .btn-primary {
+            background: #2d5a4a;
+        }
+
+        body.sunset-theme .btn-primary:hover {
+            background: #1f3f33;
+        }
+
+        body.hps-theme .btn-primary {
+            background: #d32f2f;
+        }
+
+        body.hps-theme .btn-primary:hover {
+            background: #b71c1c;
+        }
+
+        .btn-secondary {
+            color: #333;
+            background: #f0f0f0;
+        }
+
+        body.hps-theme .btn-secondary {
+            background: #3d3d3d;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        body.hps-theme .btn-secondary:hover {
+            background: #4d4d4d;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        body.hps-theme .chart-section {
+            background: #2d2d2d;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .chart-section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        body.sunset-theme .chart-section h2 {
+            color: #2d5a4a;
+        }
+
+        body.hps-theme .chart-section h2 {
+            color: #ffffff;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+
+        body.sunset-theme .stat-box {
+            border-left-color: #2d5a4a;
+        }
+
+        body.hps-theme .stat-box {
+            background: #3d3d3d;
+            color: #ffffff;
+            border-left-color: #d32f2f;
+        }
+
+        .stat-box.alert {
+            border-left-color: #e74c3c;
+        }
+
+        .stat-box.success {
+            border-left-color: #27ae60;
+        }
+
+        .stat-box.info {
+            border-left-color: #3498db;
+        }
+
+        .stat-box p {
+            margin-top: 8px;
+        }
+
+        body.sunset-theme .stat-box p {
+            color: #666;
+        }
+
+        body.hps-theme .stat-box p {
+            color: #cccccc;
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body class="sunset-theme">
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Business Dashboard</h1>
+                    <p>Real-time clarity on your operations</p>
+                </div>
+                <button id="refresh-btn" style="padding: 10px 20px; background: #2d5a4a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Refresh Data</button>
+            </div>
+            <p id="status-text" style="font-size: 12px; color: #999; margin-top: 10px;">Loading data...</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('sunset')">Sunset Retreats</button>
+            <button class="tab-btn" onclick="switchTab('hps')">High Performance Strategies</button>
+        </div>
+
+        <!-- Sunset Retreats Tab -->
+        <div id="sunset" class="tab-content active">
+            <div class="input-section">
+                <h2>Update Metrics</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Total Bookings (Month)</label>
+                        <input type="number" id="sunset-bookings" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Occupancy Rate (%)</label>
+                        <input type="number" id="sunset-occupancy" placeholder="0" min="0" max="100" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Revenue (£)</label>
+                        <input type="number" id="sunset-revenue" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Facebook Ad Spend (£)</label>
+                        <input type="number" id="sunset-ad-spend" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>ROAS (%)</label>
+                        <input type="number" id="sunset-roas" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Cost Per Booking (£)</label>
+                        <input type="number" id="sunset-cpb" placeholder="0" value="0">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="updateSunset()">Save Metrics</button>
+                    <button class="btn-secondary" onclick="clearSunset()">Clear</button>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Bookings</div>
+                    <div class="metric-value" id="sunset-display-bookings">0</div>
+                    <div class="metric-trend">This month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Occupancy Rate</div>
+                    <div class="metric-value" id="sunset-display-occupancy">0%</div>
+                    <div class="metric-trend">Current capacity</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Revenue</div>
+                    <div class="metric-value" id="sunset-display-revenue">£0</div>
+                    <div class="metric-trend">This month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Ad Spend</div>
+                    <div class="metric-value" id="sunset-display-ad-spend">£0</div>
+                    <div class="metric-trend">Facebook ads</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">ROAS</div>
+                    <div class="metric-value" id="sunset-display-roas">0%</div>
+                    <div class="metric-trend">Return on ad spend</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Cost Per Booking</div>
+                    <div class="metric-value" id="sunset-display-cpb">£0</div>
+                    <div class="metric-trend">Acquisition cost</div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h2>Performance Summary</h2>
+                <div class="stat-row">
+                    <div class="stat-box info">
+                        <strong>Efficiency</strong>
+                        <p id="sunset-efficiency" style="margin-top: 8px; color: #666;">Track how efficiently you're converting ad spend to bookings</p>
+                    </div>
+                    <div class="stat-box">
+                        <strong>Revenue Per Booking</strong>
+                        <p id="sunset-rpb" style="margin-top: 8px; color: #666;">Average value per booking</p>
+                    </div>
+                    <div class="stat-box">
+                        <strong>Ad Efficiency</strong>
+                        <p id="sunset-ad-eff" style="margin-top: 8px; color: #666;">How well your ad spend converts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- High Performance Strategies Tab -->
+        <div id="hps" class="tab-content">
+            <div class="input-section">
+                <h2>Update Metrics</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>New Leads (Month)</label>
+                        <input type="number" id="hps-leads" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Lead to Client Conversion (%)</label>
+                        <input type="number" id="hps-conversion" placeholder="0" min="0" max="100" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Active Clients</label>
+                        <input type="number" id="hps-clients" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Revenue (£)</label>
+                        <input type="number" id="hps-revenue" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Cost Per Lead (£)</label>
+                        <input type="number" id="hps-cpl" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Social Followers</label>
+                        <input type="number" id="hps-followers" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Average Video Views</label>
+                        <input type="number" id="hps-views" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Subscribers</label>
+                        <input type="number" id="hps-email" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Ad Spend (£)</label>
+                        <input type="number" id="hps-ad-spend" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>ROAS (%)</label>
+                        <input type="number" id="hps-roas" placeholder="0" value="0">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="updateHPS()">Save Metrics</button>
+                    <button class="btn-secondary" onclick="clearHPS()">Clear</button>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">New Leads</div>
+                    <div class="metric-value" id="hps-display-leads">0</div>
+                    <div class="metric-trend">This month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Conversion Rate</div>
+                    <div class="metric-value" id="hps-display-conversion">0%</div>
+                    <div class="metric-trend">Lead to client</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Active Clients</div>
+                    <div class="metric-value" id="hps-display-clients">0</div>
+                    <div class="metric-trend">Current</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Monthly Revenue</div>
+                    <div class="metric-value" id="hps-display-revenue">£0</div>
+                    <div class="metric-trend">Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Cost Per Lead</div>
+                    <div class="metric-value" id="hps-display-cpl">£0</div>
+                    <div class="metric-trend">Acquisition</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Followers</div>
+                    <div class="metric-value" id="hps-display-followers">0</div>
+                    <div class="metric-trend">All platforms</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Video Views</div>
+                    <div class="metric-value" id="hps-display-views">0</div>
+                    <div class="metric-trend">Average per video</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Email Subscribers</div>
+                    <div class="metric-value" id="hps-display-email">0</div>
+                    <div class="metric-trend">Current list</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Ad Spend</div>
+                    <div class="metric-value" id="hps-display-ad-spend">£0</div>
+                    <div class="metric-trend">Social/paid</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">ROAS</div>
+                    <div class="metric-value" id="hps-display-roas">0%</div>
+                    <div class="metric-trend">Return on spend</div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h2>Performance Summary</h2>
+                <div class="stat-row">
+                    <div class="stat-box info">
+                        <strong>Clients from Leads</strong>
+                        <p id="hps-clients-count" style="margin-top: 8px; color: #666;">Expected new clients this month</p>
+                    </div>
+                    <div class="stat-box">
+                        <strong>Revenue Per Client</strong>
+                        <p id="hps-rpc" style="margin-top: 8px; color: #666;">Average monthly value per client</p>
+                    </div>
+                    <div class="stat-box">
+                        <strong>Engagement</strong>
+                        <p id="hps-engagement" style="margin-top: 8px; color: #666;">Content reaching your audience</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANT: Replace this with your Render backend URL
+        // Example: https://business-metrics-backend.onrender.com
+        const API_URL = 'https://business-metrics-backend.onrender.com';
+
+        // Fetch data from backend
+        async function fetchBackendData() {
+            const statusEl = document.getElementById('status-text');
+            try {
+                if (API_URL.includes('your-render-url')) {
+                    statusEl.textContent = '⚠️ Backend URL not configured. Update API_URL in the dashboard code.';
+                    statusEl.style.color = '#e74c3c';
+                    return;
+                }
+
+                statusEl.textContent = 'Fetching data...';
+                statusEl.style.color = '#999';
+
+                const response = await fetch(`${API_URL}/api/metrics`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.success && data.data) {
+                    loadSunsetData(data.data.sunset);
+                    loadHPSData(data.data.hps);
+                    const timestamp = new Date(data.timestamp).toLocaleTimeString();
+                    statusEl.textContent = `✓ Data updated at ${timestamp}`;
+                    statusEl.style.color = '#27ae60';
+                    console.log('Data loaded from backend:', data.data);
+                } else {
+                    throw new Error('Invalid data format');
+                }
+            } catch (error) {
+                console.error('Failed to fetch from backend:', error);
+                statusEl.textContent = `✗ Backend connection failed: ${error.message}. Manual input mode active.`;
+                statusEl.style.color = '#e74c3c';
+            }
+        }
+
+        // Load Sunset Retreats data
+        function loadSunsetData(data) {
+            document.getElementById('sunset-bookings').value = data.bookings || 0;
+            document.getElementById('sunset-occupancy').value = data.occupancy || 0;
+            document.getElementById('sunset-revenue').value = data.revenue || 0;
+            document.getElementById('sunset-ad-spend').value = data.adSpend || 0;
+            document.getElementById('sunset-roas').value = data.roas || 0;
+            document.getElementById('sunset-cpb').value = data.cpb || 0;
+            updateSunset();
+        }
+
+        // Load High Performance Strategies data
+        function loadHPSData(data) {
+            document.getElementById('hps-leads').value = data.leads || 0;
+            document.getElementById('hps-conversion').value = data.conversion || 0;
+            document.getElementById('hps-clients').value = data.clients || 0;
+            document.getElementById('hps-revenue').value = data.revenue || 0;
+            document.getElementById('hps-cpl').value = data.cpl || 0;
+            document.getElementById('hps-followers').value = data.followers || 0;
+            document.getElementById('hps-views').value = data.views || 0;
+            document.getElementById('hps-email').value = data.email || 0;
+            document.getElementById('hps-ad-spend').value = data.adSpend || 0;
+            document.getElementById('hps-roas').value = data.roas || 0;
+            updateHPS();
+        }
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+
+            // Switch theme
+            const body = document.body;
+            if (tab === 'sunset') {
+                body.classList.remove('hps-theme');
+                body.classList.add('sunset-theme');
+            } else if (tab === 'hps') {
+                body.classList.remove('sunset-theme');
+                body.classList.add('hps-theme');
+            }
+        }
+
+        // Sunset Retreats Functions
+        function updateSunset() {
+            const bookings = parseFloat(document.getElementById('sunset-bookings').value) || 0;
+            const occupancy = parseFloat(document.getElementById('sunset-occupancy').value) || 0;
+            const revenue = parseFloat(document.getElementById('sunset-revenue').value) || 0;
+            const adSpend = parseFloat(document.getElementById('sunset-ad-spend').value) || 0;
+            const roas = parseFloat(document.getElementById('sunset-roas').value) || 0;
+            const cpb = parseFloat(document.getElementById('sunset-cpb').value) || 0;
+
+            document.getElementById('sunset-display-bookings').textContent = bookings.toLocaleString();
+            document.getElementById('sunset-display-occupancy').textContent = occupancy.toFixed(1) + '%';
+            document.getElementById('sunset-display-revenue').textContent = '£' + revenue.toLocaleString('en-GB', {maximumFractionDigits: 0});
+            document.getElementById('sunset-display-ad-spend').textContent = '£' + adSpend.toLocaleString('en-GB', {maximumFractionDigits: 0});
+            document.getElementById('sunset-display-roas').textContent = roas.toFixed(1) + '%';
+            document.getElementById('sunset-display-cpb').textContent = '£' + cpb.toLocaleString('en-GB', {maximumFractionDigits: 0});
+
+            const rpb = bookings > 0 ? (revenue / bookings).toFixed(2) : 0;
+            document.getElementById('sunset-rpb').textContent = '£' + rpb;
+
+            const adEff = adSpend > 0 ? ((revenue / adSpend) * 100).toFixed(0) + '%' : 'N/A';
+            document.getElementById('sunset-ad-eff').textContent = adEff;
+
+            document.getElementById('sunset-efficiency').textContent = adSpend > 0 ? (bookings / adSpend * 100).toFixed(1) + ' bookings per £100 spent' : 'Add ad spend to see efficiency';
+        }
+
+        function clearSunset() {
+            document.getElementById('sunset-bookings').value = '0';
+            document.getElementById('sunset-occupancy').value = '0';
+            document.getElementById('sunset-revenue').value = '0';
+            document.getElementById('sunset-ad-spend').value = '0';
+            document.getElementById('sunset-roas').value = '0';
+            document.getElementById('sunset-cpb').value = '0';
+            updateSunset();
+        }
+
+        // High Performance Strategies Functions
+        function updateHPS() {
+            const leads = parseFloat(document.getElementById('hps-leads').value) || 0;
+            const conversion = parseFloat(document.getElementById('hps-conversion').value) || 0;
+            const clients = parseFloat(document.getElementById('hps-clients').value) || 0;
+            const revenue = parseFloat(document.getElementById('hps-revenue').value) || 0;
+            const cpl = parseFloat(document.getElementById('hps-cpl').value) || 0;
+            const followers = parseFloat(document.getElementById('hps-followers').value) || 0;
+            const views = parseFloat(document.getElementById('hps-views').value) || 0;
+            const email = parseFloat(document.getElementById('hps-email').value) || 0;
+            const adSpend = parseFloat(document.getElementById('hps-ad-spend').value) || 0;
+            const roas = parseFloat(document.getElementById('hps-roas').value) || 0;
+
+            document.getElementById('hps-display-leads').textContent = leads.toLocaleString();
+            document.getElementById('hps-display-conversion').textContent = conversion.toFixed(1) + '%';
+            document.getElementById('hps-display-clients').textContent = clients.toLocaleString();
+            document.getElementById('hps-display-revenue').textContent = '£' + revenue.toLocaleString('en-GB', {maximumFractionDigits: 0});
+            document.getElementById('hps-display-cpl').textContent = '£' + cpl.toLocaleString('en-GB', {maximumFractionDigits: 0});
+            document.getElementById('hps-display-followers').textContent = followers.toLocaleString();
+            document.getElementById('hps-display-views').textContent = views.toLocaleString();
+            document.getElementById('hps-display-email').textContent = email.toLocaleString();
+            document.getElementById('hps-display-ad-spend').textContent = '£' + adSpend.toLocaleString('en-GB', {maximumFractionDigits: 0});
+            document.getElementById('hps-display-roas').textContent = roas.toFixed(1) + '%';
+
+            const clientsFromLeads = Math.round(leads * (conversion / 100));
+            document.getElementById('hps-clients-count').textContent = clientsFromLeads + ' new clients expected this month';
+
+            const rpc = clients > 0 ? (revenue / clients).toFixed(2) : 0;
+            document.getElementById('hps-rpc').textContent = '£' + rpc;
+
+            const engagement = followers > 0 ? ((views / followers) * 100).toFixed(1) + '%' : 'N/A';
+            document.getElementById('hps-engagement').textContent = engagement + ' view rate';
+        }
+
+        function clearHPS() {
+            document.getElementById('hps-leads').value = '0';
+            document.getElementById('hps-conversion').value = '0';
+            document.getElementById('hps-clients').value = '0';
+            document.getElementById('hps-revenue').value = '0';
+            document.getElementById('hps-cpl').value = '0';
+            document.getElementById('hps-followers').value = '0';
+            document.getElementById('hps-views').value = '0';
+            document.getElementById('hps-email').value = '0';
+            document.getElementById('hps-ad-spend').value = '0';
+            document.getElementById('hps-roas').value = '0';
+            updateHPS();
+        }
+
+        // Initial load
+        updateSunset();
+        updateHPS();
+
+        // Fetch backend data on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, fetching backend data...');
+            fetchBackendData();
+        });
+
+        // Optional: Auto-refresh every 30 minutes
+        setInterval(fetchBackendData, 30 * 60 * 1000);
+
+        // Add refresh button functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.getElementById('refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', fetchBackendData);
+            }
+        });
+    </script>
+</body>
+</html>
