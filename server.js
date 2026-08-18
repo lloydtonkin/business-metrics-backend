@@ -35,32 +35,59 @@ let cachedData = {
 };
 
 async function getStripeData(businessType) {
-  try {
-    const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+    try {
+          const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+          const charges = await stripe.charges.list({
+                  limit: 100,
+                  created: { gte: thirtyDaysAgo }
+          });
 
-    const charges = await stripe.charges.list({
-      limit: 100,
-      created: { gte: thirtyDaysAgo }
-    });
+          let totalRevenue = 0, successfulCharges = 0, failedCharges = 0, refundedAmount = 0, refundCount = 0, totalChargesRequested = 0;
+          let customerSet = new Set(), paymentMethods = {};
 
-    let totalRevenue = 0;
-    let successfulCharges = 0;
+          charges.data.forEach(charge => {
+                  totalChargesRequested += 1;
+                  if (charge.customer) customerSet.add(charge.customer);
+                  const paymentMethod = charge.payment_method_details?.type || 'unknown';
+                  paymentMethods[paymentMethod] = (paymentMethods[paymentMethod] || 0) + 1;
 
-    charges.data.forEach(charge => {
-      if (charge.status === 'succeeded') {
-        totalRevenue += charge.amount / 100;
-        successfulCharges += 1;
-      }
-    });
+                  if (charge.status === 'succeeded') {
+                            totalRevenue += charge.amount / 100;
+                            successfulCharges += 1;
+                            if (charge.refunds && charge.refunds.data.length > 0) {
+                                        charge.refunds.data.forEach(refund => {
+                                                      if (refund.status === 'succeeded') {
+                                                                      refundedAmount += refund.amount / 100;
+                                                                      refundCount += 1;
+                                                      }
+                                        });
+                            }
+                  } else if (charge.status === 'failed') {
+                            failedCharges += 1;
+                  }
+          });
 
-    return {
-      revenue: parseFloat(totalRevenue.toFixed(2)),
-      bookings: successfulCharges,
-    };
-  } catch (error) {
-    console.error('Stripe error:', error.message);
-    return { revenue: 0, bookings: 0 };
-  }
+          const avgTransactionValue = successfulCharges > 0 ? (totalRevenue / successfulCharges).toFixed(2) : 0;
+          const successRate = totalChargesRequested > 0 ? ((successfulCharges / totalChargesRequested) * 100).toFixed(1) : 0;
+          const netRevenue = (totalRevenue - refundedAmount).toFixed(2);
+
+          return {
+                  revenue: parseFloat(totalRevenue.toFixed(2)),
+                  netRevenue: parseFloat(netRevenue),
+                  refundedAmount: parseFloat(refundedAmount.toFixed(2)),
+                  bookings: successfulCharges,
+                  transactions: totalChargesRequested,
+                  failedTransactions: failedCharges,
+                  refunds: refundCount,
+                  avgTransactionValue: parseFloat(avgTransactionValue),
+                  successRate: parseFloat(successRate),
+                  uniqueCustomers: customerSet.size,
+                  paymentMethods: paymentMethods
+          };
+    } catch (error) {
+          console.error('Stripe error:', error.message);
+          return { revenue: 0, netRevenue: 0, refundedAmount: 0, bookings: 0, transactions: 0, failedTransactions: 0, refunds: 0, avgTransactionValue: 0, successRate: 0, uniqueCustomers: 0, paymentMethods: {} };
+    }
 }
 
 async function getInstagramFollowers(businessType) {
@@ -135,28 +162,47 @@ app.get('/api/metrics', async (req, res) => {
     const hpsAdData = await getMetaAdsData(process.env.HPS_ADS_ACCOUNT_ID);
 
     cachedData.sunset = {
-      bookings: stripeData.bookings,
-      occupancy: 0,
-      revenue: stripeData.revenue,
-      adSpend: sunsetAdData.spend,
-      roas: stripeData.revenue > 0 ? ((stripeData.revenue / sunsetAdData.spend) * 100).toFixed(1) : 0,
-      cpb: stripeData.bookings > 0 ? (sunsetAdData.spend / stripeData.bookings).toFixed(2) : 0,
-      followers: sunsetFollowers,
-      lastUpdated: new Date().toISOString()
+            revenue: stripeData.revenue,
+            netRevenue: stripeData.netRevenue,
+            refundedAmount: stripeData.refundedAmount,
+            bookings: stripeData.bookings,
+            transactions: stripeData.transactions,
+            failedTransactions: stripeData.failedTransactions,
+            refunds: stripeData.refunds,
+            avgTransactionValue: stripeData.avgTransactionValue,
+            successRate: stripeData.successRate,
+            uniqueCustomers: stripeData.uniqueCustomers,
+            occupancy: 0,
+            adSpend: sunsetAdData.spend,
+            roas: stripeData.revenue > 0 ? ((stripeData.revenue / sunsetAdData.spend) * 100).toFixed(1) : 0,
+            cpb: stripeData.bookings > 0 ? (sunsetAdData.spend / stripeData.bookings).toFixed(2) : 0,
+            followers: sunsetFollowers,
+            paymentMethods: stripeData.paymentMethods,
+            lastUpdated: new Date().toISOString()
     };
 
     cachedData.hps = {
-      leads: 0,
-      conversion: 0,
-      clients: 0,
-      revenue: stripeData.revenue,
-      cpl: 0,
-      followers: hpsFollowers,
-      views: 0,
-      email: 0,
-      adSpend: hpsAdData.spend,
-      roas: stripeData.revenue > 0 ? ((stripeData.revenue / hpsAdData.spend) * 100).toFixed(1) : 0,
-      lastUpdated: new Date().toISOString()
+            revenue: stripeData.revenue,
+            netRevenue: stripeData.netRevenue,
+            refundedAmount: stripeData.refundedAmount,
+            bookings: stripeData.bookings,
+            transactions: stripeData.transactions,
+            failedTransactions: stripeData.failedTransactions,
+            refunds: stripeData.refunds,
+            avgTransactionValue: stripeData.avgTransactionValue,
+            successRate: stripeData.successRate,
+            uniqueCustomers: stripeData.uniqueCustomers,
+            leads: 0,
+            conversion: 0,
+            clients: 0,
+            cpl: 0,
+            followers: hpsFollowers,
+            views: 0,
+            email: 0,
+            adSpend: hpsAdData.spend,
+            roas: stripeData.revenue > 0 ? ((stripeData.revenue / hpsAdData.spend) * 100).toFixed(1) : 0,
+            paymentMethods: stripeData.paymentMethods,
+            lastUpdated: new Date().toISOString()
     };
 
     res.json({
